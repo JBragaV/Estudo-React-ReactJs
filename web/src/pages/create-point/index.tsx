@@ -10,6 +10,7 @@ import api from '../../services/api'
 
 import Logo from '../../assets/logo.svg';
 import './style.css';
+import Dropzone from '../../components/dropzone';
 
 interface Items {
     id: number,
@@ -50,7 +51,7 @@ const CreatePoint = ()=>{
             .then(resp => {
                 setUf(resp.data);
             })
-    });
+    },[]);
 
     const [selectedUf, setSelectedUf] = useState("0");
     function handleSelectUf(event: ChangeEvent<HTMLSelectElement>){
@@ -105,24 +106,29 @@ const CreatePoint = ()=>{
         }
     }
 
+    const [selectedFile, setSelectedFile] = useState<File>();
+
     async function handleSubmit(event: FormEvent){
         event.preventDefault();
+
+
         const { name, email, whatsapp } = formData;
         const uf = selectedUf;
         const city = selectedCity;
         const [ latitude, longitude ] = selectedPosition;
         const items = selectedItems;
+        
+        const data = new FormData()
+        data.append('name', name);
+        data.append('email',email)
+        data.append('whatsapp',whatsapp)
+        data.append('uf',uf)
+        data.append('city', city)
+        data.append('latitude', String(latitude))
+        data.append('longitude', String(longitude))
+        data.append('items', items.join(","))
+        if(selectedFile) data.append('image', selectedFile);
 
-        const data = {
-            name,
-            email,
-            whatsapp,
-            latitude,
-            longitude,
-            city,
-            uf,
-            items 
-        }
         console.log(data);
         await api.post('points', data);
 
@@ -142,6 +148,7 @@ const CreatePoint = ()=>{
             </header>
             <form onSubmit={handleSubmit}>
                 <h1>Cadastro do <br/>ponto de coleta</h1>
+                <Dropzone onFileUploaded={setSelectedFile}/>
                 <fieldset>
                     <legend><h2>Dados</h2></legend>
                 </fieldset>
